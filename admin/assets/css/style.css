@@ -1,0 +1,102 @@
+/* Ajustement de la taille de base du texte */
+body {
+    margin: 0;
+    font-family: var(--bn-font-family);
+    font-size: 16px; /* Augmentation de la taille de base */
+    line-height: 1.5;
+    background-color: var(--bn-body-bg);
+}
+
+/* Tableaux - mise à jour des tailles et alignements */
+.bn-table {
+    width: 100%;
+    margin-bottom: 1rem;
+    color: #212529;
+    border-collapse: collapse;
+    font-size: 1rem; /* Augmentation de la taille du texte dans les tableaux */
+}
+
+.bn-table th,
+.bn-table td {
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--bn-border-color);
+    vertical-align: middle;
+    text-align: center; /* Centrage par défaut */
+}
+
+/* Exception pour la colonne Joueur */
+.bn-table th:nth-child(2),
+.bn-table td:nth-child(2) {
+    text-align: left;
+}
+
+/* Ajustement des en-têtes */
+.bn-table th {
+    font-weight: 500;
+    border-bottom: 2px solid var(--bn-border-color);
+    white-space: nowrap;
+}
+
+/* Style pour le rating entre parenthèses */
+.bn-rating {
+    color: #6c757d;
+    font-size: 1rem; /* Taille augmentée */
+}
+
+/* Ajustement des colonnes numériques */
+.bn-text-center {
+    text-align: center !important;
+}
+
+/* Titre principal */
+h1 {
+    font-size: 2.25rem; /* Taille augmentée */
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+}
+
+/* Sous-titre (Matches du championnat) */
+h2 {
+    font-size: 1.5rem; /* Taille augmentée */
+    font-weight: 500;
+    margin: 1.5rem 0;
+}
+
+/* Texte explicatif en bas */
+.bn-small {
+    font-size: 1rem; /* Taille augmentée */
+    color: #6c757d;
+    margin-top: 1rem;
+}
+
+/* Sélecteur d'année */
+.bn-form-select {
+    font-size: 1rem; /* Taille augmentée */
+    padding: 0.375rem 2.25rem 0.375rem 0.75rem;
+}
+
+/* Ajustement des espacements pour les grands caractères */
+.bn-card {
+    margin-bottom: 2rem;
+}
+
+.bn-card-body {
+    padding: 1.25rem;
+}
+
+/* Ajustement des couleurs pour la lisibilité */
+.bn-text-success {
+    color: #198754 !important;
+    font-weight: 500;
+}
+
+.bn-text-danger {
+    color: #dc3545 !important;
+    font-weight: 500;
+}
+
+/* Score dans la liste des matches */
+.bn-score {
+    font-weight: 500;
+    text-align: right !important;
+}
