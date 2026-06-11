@@ -4,12 +4,12 @@ require_once 'admin/includes/config.php';
 require_once 'includes/header.php';
 
 $perPage = 6;
-$page = max(1, (int)($_GET['page'] ?? 1));
-$offset = ($page - 1) * $perPage;
+$page    = max(1, (int)($_GET['page'] ?? 1));
+$offset  = ($page - 1) * $perPage;
 
-$total = $pdo->query("SELECT COUNT(*) FROM news WHERE is_published = 1")->fetchColumn();
+$total      = $pdo->query("SELECT COUNT(*) FROM news WHERE is_published = 1")->fetchColumn();
 $totalPages = (int)ceil($total / $perPage);
-$page = min($page, max(1, $totalPages));
+$page       = min($page, max(1, $totalPages));
 
 $stmt = $pdo->prepare("
     SELECT n.*, u.first_name, u.last_name
@@ -20,7 +20,7 @@ $stmt = $pdo->prepare("
     LIMIT ? OFFSET ?
 ");
 $stmt->bindValue(1, $perPage, PDO::PARAM_INT);
-$stmt->bindValue(2, $offset, PDO::PARAM_INT);
+$stmt->bindValue(2, $offset,  PDO::PARAM_INT);
 $stmt->execute();
 $articles = $stmt->fetchAll();
 ?>
@@ -36,14 +36,27 @@ $articles = $stmt->fetchAll();
         <div class="row g-4">
             <?php foreach ($articles as $article): ?>
             <div class="col-md-6 col-lg-4">
-                <div class="nb-card">
-                    <div class="card-body d-flex flex-column">
-                        <p class="news-date mb-1"><?= date('d/m/Y', strtotime($article['published_at'])) ?></p>
-                        <h2 class="card-title h6 mb-2"><?= htmlspecialchars($article['title']) ?></h2>
-                        <p class="card-text flex-grow-1"><?= htmlspecialchars($article['excerpt'] ?? '') ?></p>
-                        <a href="/actualite.php?id=<?= $article['id'] ?>" class="btn btn-nb btn-sm mt-3">Lire la suite</a>
+                <a href="/actualite.php?id=<?= $article['id'] ?>" class="text-decoration-none">
+                    <div class="nb-card h-100">
+                        <?php if ($article['cover_image']): ?>
+                        <div style="overflow:hidden;height:180px;border-radius:8px 8px 0 0">
+                            <img src="/assets/img/news/<?= htmlspecialchars($article['cover_image']) ?>"
+                                 alt="<?= htmlspecialchars($article['title']) ?>"
+                                 style="width:100%;height:100%;object-fit:cover;transition:transform .3s"
+                                 onmouseover="this.style.transform='scale(1.05)'"
+                                 onmouseout="this.style.transform='scale(1)'">
+                        </div>
+                        <?php endif; ?>
+                        <div class="card-body d-flex flex-column p-3">
+                            <p class="news-date mb-1"><?= date('d/m/Y', strtotime($article['published_at'])) ?></p>
+                            <h2 class="card-title h6 mb-2"><?= htmlspecialchars($article['title']) ?></h2>
+                            <p class="card-text flex-grow-1 small" style="color:#aaa">
+                                <?= htmlspecialchars($article['excerpt'] ?? '') ?>
+                            </p>
+                            <span class="btn btn-nb btn-sm mt-3 align-self-start">Lire la suite</span>
+                        </div>
                     </div>
-                </div>
+                </a>
             </div>
             <?php endforeach; ?>
         </div>
@@ -52,7 +65,8 @@ $articles = $stmt->fetchAll();
         <nav class="mt-5">
             <ul class="pagination justify-content-center">
                 <li class="page-item <?= $page <= 1 ? 'disabled' : '' ?>">
-                    <a class="page-link" href="?page=<?= $page - 1 ?>" style="background:var(--nb-surface);border-color:var(--nb-border);color:#fff">&laquo;</a>
+                    <a class="page-link" href="?page=<?= $page - 1 ?>"
+                       style="background:var(--nb-surface);border-color:var(--nb-border);color:#fff">&laquo;</a>
                 </li>
                 <?php for ($i = 1; $i <= $totalPages; $i++): ?>
                 <li class="page-item <?= $i === $page ? 'active' : '' ?>">
@@ -63,7 +77,8 @@ $articles = $stmt->fetchAll();
                 </li>
                 <?php endfor; ?>
                 <li class="page-item <?= $page >= $totalPages ? 'disabled' : '' ?>">
-                    <a class="page-link" href="?page=<?= $page + 1 ?>" style="background:var(--nb-surface);border-color:var(--nb-border);color:#fff">&raquo;</a>
+                    <a class="page-link" href="?page=<?= $page + 1 ?>"
+                       style="background:var(--nb-surface);border-color:var(--nb-border);color:#fff">&raquo;</a>
                 </li>
             </ul>
         </nav>
