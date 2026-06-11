@@ -165,92 +165,76 @@ if (isset($_POST['calculate'])) {
     
     exit;
 }
-?>
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calcul des Ratings - BackNord</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
-    <div class="container mt-4">
-        <h1>Calcul des Ratings</h1>
-        
-        <div class="alert alert-warning">
-            <h4 class="alert-heading">Attention!</h4>
-            <p>Cette opération va:</p>
-            <ul>
-                <li>Réinitialiser tous les ratings à 1500 et les expériences à 0</li>
-                <li>Recalculer les ratings et expériences en fonction de tous les matches joués</li>
-                <li>Mettre à jour les valeurs de rating et d'expérience avant chaque match</li>
-                <li>Cette opération peut prendre plusieurs minutes</li>
-            </ul>
-            <p>Ne fermez pas cette fenêtre pendant le traitement.</p>
-        </div>
-        
-        <form method="post" id="ratingForm">
-            <input type="hidden" name="calculate" value="1">
-            <button type="submit" class="btn btn-primary" id="calculateBtn">
-                Lancer le calcul
-            </button>
-        </form>
-        
-        <div id="progress" class="mt-3" style="display:none;">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Calcul en cours...</span>
-            </div>
-            <p>Calcul en cours, veuillez patienter...</p>
-        </div>
-        
-        <div id="result" class="mt-3"></div>
-    </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-    document.getElementById('ratingForm').onsubmit = function(e) {
-        e.preventDefault();
-        
-        document.getElementById('calculateBtn').disabled = true;
-        document.getElementById('progress').style.display = 'block';
-        document.getElementById('result').innerHTML = '';
-        
-        fetch(window.location.href, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: 'calculate=1'
-        })
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('progress').style.display = 'none';
-            
-            if (data.success) {
-                document.getElementById('result').innerHTML = `
-                    <div class="alert alert-success">
-                        ${data.message}<br>
-                        Total matches traités: ${data.processed}/${data.total}
-                    </div>`;
-            } else {
-                document.getElementById('result').innerHTML = `
-                    <div class="alert alert-danger">
-                        ${data.message}
-                    </div>`;
-            }
-            
-            document.getElementById('calculateBtn').disabled = false;
-        })
-        .catch(error => {
-            document.getElementById('progress').style.display = 'none';
-            document.getElementById('result').innerHTML = `
-                <div class="alert alert-danger">
-                    Erreur de communication avec le serveur: ${error}
-                </div>`;
-            document.getElementById('calculateBtn').disabled = false;
-        });
-    };
-    </script>
-</body>
-</html>
+$pageTitle = 'Recalcul ELO — Admin Nord Backgammon';
+require_once 'includes/nav.php';
+?>
+
+<div class="container-fluid py-4 px-4">
+    <div class="nb-page-header"><h1><i class="bi bi-arrow-repeat me-2"></i>Recalcul des ratings ELO</h1></div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="alert alert-warning mb-4">
+                <h5 class="alert-heading"><i class="bi bi-exclamation-triangle-fill me-2"></i>Attention</h5>
+                <p class="mb-2">Cette opération va :</p>
+                <ul class="mb-2">
+                    <li>Réinitialiser tous les ratings à <strong>1500</strong> et les expériences à <strong>0</strong></li>
+                    <li>Rejouer tous les matchs dans l'ordre chronologique</li>
+                    <li>Mettre à jour les colonnes <em>rating_before</em> et <em>rating_change</em> de chaque match</li>
+                </ul>
+                <p class="mb-0 small">Ne fermez pas cette fenêtre pendant le traitement.</p>
+            </div>
+
+            <div class="card">
+                <div class="card-body text-center py-4">
+                    <form method="post" id="ratingForm">
+                        <input type="hidden" name="calculate" value="1">
+                        <button type="submit" class="btn btn-primary btn-lg px-5" id="calculateBtn">
+                            <i class="bi bi-play-fill me-2"></i>Lancer le calcul
+                        </button>
+                    </form>
+
+                    <div id="progress" class="mt-4" style="display:none">
+                        <div class="spinner-border mb-2" style="color:#E87128" role="status"></div>
+                        <p class="text-muted">Calcul en cours, veuillez patienter…</p>
+                    </div>
+
+                    <div id="result" class="mt-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<?php
+$extraScript = <<<'JS'
+<script>
+document.getElementById('ratingForm').onsubmit = function(e) {
+    e.preventDefault();
+    document.getElementById('calculateBtn').disabled = true;
+    document.getElementById('progress').style.display = 'block';
+    document.getElementById('result').innerHTML = '';
+    fetch(window.location.href, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: 'calculate=1'
+    })
+    .then(r => r.json())
+    .then(data => {
+        document.getElementById('progress').style.display = 'none';
+        document.getElementById('result').innerHTML = data.success
+            ? `<div class="alert alert-success"><i class="bi bi-check-circle-fill me-2"></i>${data.message} (${data.processed}/${data.total} matchs)</div>`
+            : `<div class="alert alert-danger">${data.message}</div>`;
+        document.getElementById('calculateBtn').disabled = false;
+    })
+    .catch(err => {
+        document.getElementById('progress').style.display = 'none';
+        document.getElementById('result').innerHTML = `<div class="alert alert-danger">Erreur : ${err}</div>`;
+        document.getElementById('calculateBtn').disabled = false;
+    });
+};
+</script>
+JS;
+require_once 'includes/admin_footer.php';
+?>

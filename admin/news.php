@@ -1,8 +1,11 @@
 <?php
+//
+// fichier admin/news.php
+//
+
 require_once 'includes/config.php';
 require_once 'includes/auth.php';
 requireRole('admin');
-require_once 'includes/nav.php';
 
 $user = getCurrentUser();
 $success = null;
@@ -16,8 +19,6 @@ if (isset($_POST['delete'], $_POST['id'])) {
 
 // Toggle publication
 if (isset($_POST['toggle'], $_POST['id'])) {
-    $article = $pdo->prepare("SELECT is_published FROM news WHERE id = ?")->execute([$_POST['id']]) ?
-               $pdo->prepare("SELECT is_published FROM news WHERE id = ?") : null;
     $stmt = $pdo->prepare("SELECT is_published FROM news WHERE id = ?");
     $stmt->execute([$_POST['id']]);
     $current = $stmt->fetchColumn();
@@ -78,24 +79,24 @@ $articles = $pdo->query("
     FROM news n JOIN users u ON n.author_id = u.id
     ORDER BY n.created_at DESC
 ")->fetchAll();
-?>
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Actualités — Admin Nord Backgammon</title>
-</head>
-<body>
-<div class="container-fluid py-4 px-4">
-    <h1 class="h4 fw-bold mb-4" style="color:#E87128">Gestion des actualités</h1>
 
-    <?php if ($success): ?><div class="alert alert-success"><?= htmlspecialchars($success) ?></div><?php endif; ?>
-    <?php if ($error):   ?><div class="alert alert-danger"><?= htmlspecialchars($error) ?></div><?php endif; ?>
+$pageTitle = 'Actualités — Admin Nord Backgammon';
+require_once 'includes/nav.php';
+?>
+
+<div class="container-fluid py-4 px-4">
+    <div class="nb-page-header"><h1><i class="bi bi-newspaper me-2"></i>Gestion des actualités</h1></div>
+
+    <?php if ($success): ?>
+    <div class="alert alert-success mb-4"><i class="bi bi-check-circle-fill me-2"></i><?= htmlspecialchars($success) ?></div>
+    <?php endif; ?>
+    <?php if ($error): ?>
+    <div class="alert alert-danger mb-4"><?= htmlspecialchars($error) ?></div>
+    <?php endif; ?>
 
     <!-- Formulaire de création -->
     <div class="card mb-4">
-        <div class="card-header fw-bold">Nouvel article</div>
+        <div class="card-header"><i class="bi bi-plus-circle me-2"></i>Nouvel article</div>
         <div class="card-body">
             <form method="post">
                 <div class="mb-3">
@@ -114,31 +115,33 @@ $articles = $pdo->query("
                     <input type="checkbox" name="is_published" class="form-check-input" id="pub_new">
                     <label class="form-check-label" for="pub_new">Publier immédiatement</label>
                 </div>
-                <button type="submit" name="add" class="btn btn-primary">Créer l'article</button>
+                <button type="submit" name="add" class="btn btn-primary">
+                    <i class="bi bi-save me-1"></i>Créer l'article
+                </button>
             </form>
         </div>
     </div>
 
     <!-- Liste des articles -->
     <div class="card">
-        <div class="card-header fw-bold">Articles (<?= count($articles) ?>)</div>
+        <div class="card-header"><i class="bi bi-list-ul me-2"></i>Articles (<?= count($articles) ?>)</div>
         <div class="card-body p-0">
-            <table class="table table-striped mb-0">
+            <table class="table table-hover mb-0">
                 <thead>
                     <tr>
                         <th class="ps-3">Titre</th>
                         <th>Auteur</th>
                         <th>Date</th>
                         <th>Statut</th>
-                        <th class="pe-3">Actions</th>
+                        <th class="text-end pe-3">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php foreach ($articles as $a): ?>
                     <tr>
                         <td class="ps-3"><?= htmlspecialchars($a['title']) ?></td>
-                        <td><?= htmlspecialchars($a['first_name'] . ' ' . $a['last_name']) ?></td>
-                        <td><?= date('d/m/Y', strtotime($a['created_at'])) ?></td>
+                        <td class="text-muted small"><?= htmlspecialchars($a['first_name'] . ' ' . $a['last_name']) ?></td>
+                        <td class="text-muted small"><?= date('d/m/Y', strtotime($a['created_at'])) ?></td>
                         <td>
                             <?php if ($a['is_published']): ?>
                                 <span class="badge" style="background:#198754">Publié</span>
@@ -146,21 +149,24 @@ $articles = $pdo->query("
                                 <span class="badge bg-secondary">Brouillon</span>
                             <?php endif; ?>
                         </td>
-                        <td class="pe-3">
-                            <button class="btn btn-sm btn-primary"
-                                    onclick="editArticle(<?= htmlspecialchars(json_encode($a)) ?>)">
-                                Modifier
+                        <td class="text-end pe-3">
+                            <button class="btn btn-sm btn-outline-secondary me-1"
+                                    onclick="editArticle(<?= htmlspecialchars(json_encode($a)) ?>)" title="Modifier">
+                                <i class="bi bi-pencil"></i>
                             </button>
                             <form method="post" class="d-inline">
                                 <input type="hidden" name="id" value="<?= $a['id'] ?>">
-                                <button type="submit" name="toggle" class="btn btn-sm btn-outline-secondary">
-                                    <?= $a['is_published'] ? 'Dépublier' : 'Publier' ?>
+                                <button type="submit" name="toggle"
+                                        class="btn btn-sm <?= $a['is_published'] ? 'btn-outline-warning' : 'btn-outline-success' ?> me-1"
+                                        title="<?= $a['is_published'] ? 'Dépublier' : 'Publier' ?>">
+                                    <i class="bi bi-<?= $a['is_published'] ? 'eye-slash' : 'eye' ?>"></i>
                                 </button>
                             </form>
-                            <form method="post" class="d-inline"
-                                  onsubmit="return confirm('Supprimer cet article ?')">
+                            <form method="post" class="d-inline" onsubmit="return confirm('Supprimer cet article ?')">
                                 <input type="hidden" name="id" value="<?= $a['id'] ?>">
-                                <button type="submit" name="delete" class="btn btn-sm btn-danger">Supprimer</button>
+                                <button type="submit" name="delete" class="btn btn-sm btn-outline-danger" title="Supprimer">
+                                    <i class="bi bi-trash"></i>
+                                </button>
                             </form>
                         </td>
                     </tr>
@@ -177,9 +183,9 @@ $articles = $pdo->query("
 <!-- Modal modification -->
 <div class="modal fade" id="editModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Modifier l'article</h5>
+        <div class="modal-content" style="background:#2a2a2a;border-color:#444">
+            <div class="modal-header" style="border-color:#444">
+                <h5 class="modal-title"><i class="bi bi-pencil-square me-2"></i>Modifier l'article</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
@@ -201,14 +207,17 @@ $articles = $pdo->query("
                         <input type="checkbox" name="is_published" class="form-check-input" id="edit_published">
                         <label class="form-check-label" for="edit_published">Publié</label>
                     </div>
-                    <button type="submit" name="edit" class="btn btn-primary">Enregistrer</button>
+                    <button type="submit" name="edit" class="btn btn-primary">
+                        <i class="bi bi-save me-1"></i>Enregistrer
+                    </button>
                 </form>
             </div>
         </div>
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<?php
+$extraScript = <<<'JS'
 <script>
 function editArticle(a) {
     document.getElementById('edit_id').value      = a.id;
@@ -219,5 +228,6 @@ function editArticle(a) {
     new bootstrap.Modal(document.getElementById('editModal')).show();
 }
 </script>
-</body>
-</html>
+JS;
+require_once 'includes/admin_footer.php';
+?>

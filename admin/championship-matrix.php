@@ -105,127 +105,82 @@ foreach ($pairMatches as $pairKey => $pairMatchList) {
         }
     }
 }
+$pageTitle = "Tableau matchs — Championnat $year — Admin";
+$extraHead = '<style>
+.match-table th, .match-table td { text-align:center; vertical-align:middle; min-width:60px; padding:6px; border-color:#3a3a3a; }
+.match-table th { height:140px; white-space:nowrap; position:relative; vertical-align:bottom; }
+.match-table th .player-name { transform:rotate(-45deg); position:absolute; bottom:15px; left:15px; transform-origin:left bottom; width:120px; text-align:left; font-size:.85rem; }
+.match-table td.player-cell { font-weight:700; text-align:left; padding-left:12px; color:#f0f0f0; white-space:nowrap; }
+.match-table td.match-played { background:#2a3a2a; color:#9d9; font-weight:600; }
+.match-table td.no-match { background:#1a1a1a; }
+.match-table td.diagonal-blocked { background:#111; }
+</style>';
+require_once 'includes/nav.php';
 ?>
 
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tableau des Matchs - Championnat BackNord <?= $year ?></title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-    <style>
-        .match-table th, .match-table td {
-            text-align: center;
-            vertical-align: middle;
-            min-width: 60px;
-            padding: 6px;
-        }
-        .match-table th {
-            height: 140px;
-            white-space: nowrap;
-            position: relative;
-            vertical-align: bottom;
-        }
-        .match-table th .player-name {
-            transform: rotate(-45deg);
-            position: absolute;
-            bottom: 15px;
-            left: 15px;
-            transform-origin: left bottom;
-            width: 120px;
-            text-align: left;
-        }
-        .match-table td.player-cell {
-            font-weight: bold;
-            text-align: left;
-            padding-left: 15px;
-        }
-        .match-table td.match-played {
-            background-color: #f8f9fa;
-        }
-        .match-table td.no-match {
-            background-color: #ffffff;
-        }
-        .match-table td.diagonal-blocked {
-            background-color: #212529;
-        }
-    </style>
-</head>
-<body>
-    <div class="container-fluid mt-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1>Tableau des Matchs - Championnat <?= $year ?></h1>
-            <?php if (!empty($years)): ?>
-                <form class="d-flex align-items-center">
-                    <label class="me-2">Année :</label>
-                    <select name="year" class="form-select form-select-sm" style="width: auto;" onchange="this.form.submit()">
-                        <?php foreach($years as $y): ?>
-                            <option value="<?= $y ?>" <?= $y == $year ? 'selected' : '' ?>><?= $y ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </form>
-            <?php endif; ?>
-        </div>
-
-        <?php if (empty($players)): ?>
-            <div class="alert alert-info">
-                Aucun match de championnat enregistré pour l'année <?= $year ?>.
-            </div>
-        <?php else: ?>
-            <div class="card">
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-bordered match-table">
-                            <thead>
-                                <tr>
-                                    <th></th>
-                                    <?php foreach ($players as $player): ?>
-                                        <th>
-                                            <div class="player-name"><?= htmlspecialchars($player['first_name']) ?> <?= substr(htmlspecialchars($player['last_name']),0,1) ?></div>
-                                        </th>
-                                    <?php endforeach; ?>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($players as $rowPlayer): ?>
-                                    <tr>
-                                        <td class="player-cell"><?= htmlspecialchars($rowPlayer['first_name']) ?> <?= substr(htmlspecialchars($rowPlayer['last_name']),0,1) ?></td>
-                                        <?php foreach ($players as $colPlayer): ?>
-                                            <?php 
-                                            $rowId = $rowPlayer['id'];
-                                            $colId = $colPlayer['id'];
-                                            
-                                            if ($rowId == $colId): ?>
-                                                <td class="diagonal-blocked"></td>
-                                            <?php elseif (isset($displayMatrix[$rowId][$colId]) && $displayMatrix[$rowId][$colId] !== null): ?>
-                                                <td class="match-played">
-                                                    <?= $displayMatrix[$rowId][$colId] ?>
-                                                </td>
-                                            <?php else: ?>
-                                                <td class="no-match"></td>
-                                            <?php endif; ?>
-                                        <?php endforeach; ?>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div class="mt-3 small text-muted">
-                        <p class="mb-0">
-                            Tableau des matchs de championnat <?= $year ?><br>
-                            Premier match entre deux joueurs : partie basse du tableau<br>
-                            Deuxième match entre deux joueurs : partie haute du tableau<br>
-                            Chaque score se lit de la façon suivante : "joueur sur la ligne"-"joueur sur la colonne"
-                        </p>
-                    </div>
-                </div>
-            </div>
+<div class="container-fluid py-4 px-4">
+    <div class="nb-page-header d-flex justify-content-between align-items-center">
+        <h1><i class="bi bi-grid-3x3-gap-fill me-2"></i>Tableau des matchs — Championnat <?= $year ?></h1>
+        <?php if (!empty($years)): ?>
+        <form class="d-flex align-items-center gap-2">
+            <label class="text-muted small mb-0">Année :</label>
+            <select name="year" class="form-select form-select-sm" style="width:auto" onchange="this.form.submit()">
+                <?php foreach ($years as $y): ?>
+                <option value="<?= $y ?>" <?= $y == $year ? 'selected' : '' ?>><?= $y ?></option>
+                <?php endforeach; ?>
+            </select>
+        </form>
         <?php endif; ?>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+    <div class="mb-4">
+        <a href="championship.php?year=<?= $year ?>" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-award-fill"></i> Classement
+        </a>
+    </div>
+
+    <?php if (empty($players)): ?>
+        <div class="alert alert-info">Aucun match de championnat enregistré pour <?= $year ?>.</div>
+    <?php else: ?>
+    <div class="card">
+        <div class="card-header">Tableau croisé des matchs <?= $year ?></div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered match-table">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <?php foreach ($players as $player): ?>
+                            <th><div class="player-name"><?= htmlspecialchars($player['first_name']) ?> <?= substr(htmlspecialchars($player['last_name']), 0, 1) ?></div></th>
+                            <?php endforeach; ?>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($players as $rowPlayer): ?>
+                        <tr>
+                            <td class="player-cell"><?= htmlspecialchars($rowPlayer['first_name']) ?> <?= substr(htmlspecialchars($rowPlayer['last_name']), 0, 1) ?></td>
+                            <?php foreach ($players as $colPlayer):
+                                $rId = $rowPlayer['id']; $cId = $colPlayer['id'];
+                            ?>
+                                <?php if ($rId == $cId): ?>
+                                    <td class="diagonal-blocked"></td>
+                                <?php elseif (isset($displayMatrix[$rId][$cId]) && $displayMatrix[$rId][$cId] !== null): ?>
+                                    <td class="match-played"><?= $displayMatrix[$rId][$cId] ?></td>
+                                <?php else: ?>
+                                    <td class="no-match"></td>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+            <p class="text-muted small mt-3 mb-0">
+                1er match : partie basse du tableau · 2e match : partie haute · Score = "joueur ligne" – "joueur colonne"
+            </p>
+        </div>
+    </div>
+    <?php endif; ?>
+</div>
+
+<?php require_once 'includes/admin_footer.php'; ?>

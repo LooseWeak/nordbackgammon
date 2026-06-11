@@ -125,164 +125,137 @@ $opponents = $pdo->prepare("
 ");
 $opponents->execute([$player_id, $player_id, $player_id, $player_id, $player_id, $player_id]);
 $frequent_opponents = $opponents->fetchAll();
+$pageTitle = 'Stats ' . htmlspecialchars($player['first_name'] . ' ' . $player['last_name']) . ' — Admin';
+$extraHead = '<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>';
+require_once 'includes/nav.php';
 ?>
 
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Statistiques de <?= htmlspecialchars($player['first_name'] . ' ' . $player['last_name']) ?> - BackNord</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body>
-    <div class="container mt-4">
-        <h1>Statistiques de <?= htmlspecialchars($player['first_name'] . ' ' . $player['last_name']) ?></h1>
+<div class="container-fluid py-4 px-4">
+    <div class="nb-page-header">
+        <a href="ranking.php" class="text-muted small d-inline-flex align-items-center gap-1 mb-2">
+            <i class="bi bi-arrow-left"></i> Classement
+        </a>
+        <h1><i class="bi bi-graph-up me-2"></i>Statistiques — <?= htmlspecialchars($player['first_name'] . ' ' . $player['last_name']) ?></h1>
+    </div>
 
-        <!-- Statistiques globales -->
-        <div class="row mt-4">
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Matches joués</h5>
-                        <p class="card-text display-4"><?= $global_stats['total_matches'] ?></p>
-                    </div>
-                </div>
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card p-3 text-center">
+                <div class="text-muted small mb-1">Matchs joués</div>
+                <div class="fw-bold" style="font-size:2.5rem;color:#E87128"><?= $global_stats['total_matches'] ?></div>
             </div>
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Pourcentage de victoires</h5>
-                        <p class="card-text display-4">
-                            <?= round(($global_stats['wins'] / $global_stats['total_matches']) * 100, 1) ?>%
-                        </p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Variation moyenne du rating</h5>
-                        <p class="card-text display-4 <?= $global_stats['avg_rating_change'] >= 0 ? 'text-success' : 'text-danger' ?>">
-                            <?= ($global_stats['avg_rating_change'] >= 0 ? '+' : '') . 
-                                number_format($global_stats['avg_rating_change'] / 100, 2, ',', ' ') ?>
-                        </p>
-                    </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card p-3 text-center">
+                <div class="text-muted small mb-1">% de victoires</div>
+                <div class="fw-bold" style="font-size:2.5rem;color:#E87128">
+                    <?= $global_stats['total_matches'] > 0 ? round(($global_stats['wins'] / $global_stats['total_matches']) * 100, 1) : 0 ?>%
                 </div>
             </div>
         </div>
-
-        <!-- Statistiques par durée de match -->
-        <div class="card mt-4">
-            <div class="card-body">
-                <h5 class="card-title">Statistiques par durée de match</h5>
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Points</th>
-                            <th>Matches joués</th>
-                            <th>Victoires</th>
-                            <th>Pourcentage</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($length_stats as $stat): ?>
-                        <tr>
-                            <td><?= $stat['points'] ?> points</td>
-                            <td><?= $stat['matches_count'] ?></td>
-                            <td><?= $stat['wins'] ?></td>
-                            <td><?= round(($stat['wins'] / $stat['matches_count']) * 100, 1) ?>%</td>
-                        </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+        <div class="col-md-4">
+            <div class="card p-3 text-center">
+                <div class="text-muted small mb-1">Variation moyenne du rating</div>
+                <div class="fw-bold <?= ($global_stats['avg_rating_change'] ?? 0) >= 0 ? 'text-success' : 'text-danger' ?>" style="font-size:2.5rem">
+                    <?= (($global_stats['avg_rating_change'] ?? 0) >= 0 ? '+' : '') . number_format(($global_stats['avg_rating_change'] ?? 0) / 100, 2, ',', ' ') ?>
+                </div>
             </div>
         </div>
-        <!-- Adversaires fréquents -->
-        <?php if (!empty($frequent_opponents)): ?>
-        <div class="card mt-4">
-            <div class="card-body">
-                <h5 class="card-title">Adversaires les plus fréquents</h5>
-                <div class="table-responsive">
-                    <table class="table">
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-5">
+            <div class="card mb-4">
+                <div class="card-header">Stats par durée de match</div>
+                <div class="card-body p-0">
+                    <table class="table table-sm mb-0">
                         <thead>
-                            <tr>
-                                <th>Adversaire</th>
-                                <th class="text-end">Matches</th>
-                                <th class="text-end">Victoires</th>
-                                <th class="text-end">Pourcentage</th>
-                            </tr>
+                            <tr><th class="ps-3">Points</th><th class="text-end">MJ</th><th class="text-end">V</th><th class="text-end pe-3">%</th></tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($frequent_opponents as $opponent): ?>
+                            <?php foreach ($length_stats as $stat): ?>
                             <tr>
-                                <td>
-                                    <?= htmlspecialchars($opponent['last_name'] . ' ' . $opponent['first_name']) ?>
-                                    <a href="player-stats.php?id=<?= $opponent['opponent_id'] ?>" class="btn btn-sm btn-link p-0 ms-1" title="Statistiques">
-                                        <i class="bi bi-graph-up"></i>
-                                    </a>
-                                </td>
-                                <td class="text-end"><?= $opponent['matches_count'] ?></td>
-                                <td class="text-end"><?= $opponent['wins'] ?></td>
-                                <td class="text-end">
-                                    <span class="<?= ($opponent['wins']/$opponent['matches_count'] > 0.5) ? 'text-success' : 
-                                                (($opponent['wins']/$opponent['matches_count'] < 0.5) ? 'text-danger' : '') ?>">
-                                        <?= round(($opponent['wins'] / $opponent['matches_count']) * 100, 1) ?>%
-                                    </span>
-                                </td>
+                                <td class="ps-3"><?= $stat['points'] ?> pts</td>
+                                <td class="text-end"><?= $stat['matches_count'] ?></td>
+                                <td class="text-end text-success"><?= $stat['wins'] ?></td>
+                                <td class="text-end pe-3"><?= round(($stat['wins'] / $stat['matches_count']) * 100, 1) ?>%</td>
                             </tr>
                             <?php endforeach; ?>
                         </tbody>
                     </table>
                 </div>
             </div>
+
+            <?php if (!empty($frequent_opponents)): ?>
+            <div class="card">
+                <div class="card-header">Adversaires fréquents <small class="text-muted">(≥3 matchs)</small></div>
+                <div class="card-body p-0">
+                    <table class="table table-sm mb-0">
+                        <thead>
+                            <tr><th class="ps-3">Adversaire</th><th class="text-end">MJ</th><th class="text-end pe-3">%V</th></tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($frequent_opponents as $opp):
+                                $pct = round(($opp['wins'] / $opp['matches_count']) * 100, 1);
+                            ?>
+                            <tr>
+                                <td class="ps-3">
+                                    <?= htmlspecialchars($opp['last_name'] . ' ' . $opp['first_name']) ?>
+                                    <a href="player-stats.php?id=<?= $opp['opponent_id'] ?>" class="ms-1" style="color:#E87128" title="Stats">
+                                        <i class="bi bi-graph-up"></i>
+                                    </a>
+                                </td>
+                                <td class="text-end"><?= $opp['matches_count'] ?></td>
+                                <td class="text-end pe-3 <?= $pct > 50 ? 'text-success' : ($pct < 50 ? 'text-danger' : '') ?>"><?= $pct ?>%</td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <?php endif; ?>
         </div>
-        <?php endif; ?>
-        <!-- Graphique d'évolution du rating -->
-        <div class="card mt-4">
-            <div class="card-body">
-                <h5 class="card-title">Évolution du rating</h5>
-                <canvas id="ratingChart"></canvas>
+
+        <div class="col-lg-7">
+            <div class="card">
+                <div class="card-header">Évolution du rating</div>
+                <div class="card-body">
+                    <canvas id="ratingChart"></canvas>
+                </div>
             </div>
         </div>
     </div>
+</div>
 
-    <script>
-        // Graphique d'évolution du rating
-        const ctx = document.getElementById('ratingChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: <?= json_encode(array_map(function($d) { 
-                    return date('d/m/Y', strtotime($d['date'])); 
-                }, $rating_data)) ?>,
-                datasets: [{
-                    label: 'Rating',
-                    data: <?= json_encode(array_map(function($d) { 
-                        return $d['rating']; 
-                    }, $rating_data)) ?>,
-                    borderColor: 'rgb(75, 192, 192)',
-                    tension: 0.1
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    title: {
-                        display: true,
-                        text: 'Évolution du rating au fil des matches'
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: false
-                    }
-                }
-            }
-        });
-    </script>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+<?php
+$labels   = json_encode(array_map(fn($d) => date('d/m/Y', strtotime($d['date'])), $rating_data));
+$data_pts = json_encode(array_map(fn($d) => $d['rating'], $rating_data));
+$extraScript = <<<JS
+<script>
+new Chart(document.getElementById('ratingChart'), {
+    type: 'line',
+    data: {
+        labels: $labels,
+        datasets: [{
+            label: 'Rating',
+            data: $data_pts,
+            borderColor: '#E87128',
+            backgroundColor: 'rgba(232,113,40,.1)',
+            tension: 0.3,
+            fill: true,
+            pointRadius: 3
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { labels: { color: '#f0f0f0' } } },
+        scales: {
+            x: { ticks: { color: '#888' }, grid: { color: '#333' } },
+            y: { ticks: { color: '#888' }, grid: { color: '#333' }, beginAtZero: false }
+        }
+    }
+});
+</script>
+JS;
+require_once 'includes/admin_footer.php';
+?>

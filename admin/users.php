@@ -1,8 +1,11 @@
 <?php
+//
+// fichier admin/users.php
+//
+
 require_once 'includes/config.php';
 require_once 'includes/auth.php';
 requireRole('admin');
-require_once 'includes/nav.php';
 
 $currentUser = getCurrentUser();
 $success = null;
@@ -11,10 +14,10 @@ $error = null;
 // Ajout
 if (isset($_POST['add'])) {
     try {
-        $username = trim($_POST['username']);
-        $email    = trim($_POST['email']);
-        $password = $_POST['password'];
-        $role     = in_array($_POST['role'], ['admin', 'member']) ? $_POST['role'] : 'member';
+        $username  = trim($_POST['username']);
+        $email     = trim($_POST['email']);
+        $password  = $_POST['password'];
+        $role      = in_array($_POST['role'], ['admin', 'member']) ? $_POST['role'] : 'member';
         $firstName = trim($_POST['first_name']);
         $lastName  = trim($_POST['last_name']);
 
@@ -66,24 +69,24 @@ if (isset($_POST['reset_password'], $_POST['id'], $_POST['new_password'])) {
 }
 
 $users = $pdo->query("SELECT * FROM users ORDER BY created_at DESC")->fetchAll();
-?>
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Utilisateurs — Admin Nord Backgammon</title>
-</head>
-<body>
-<div class="container-fluid py-4 px-4">
-    <h1 class="h4 fw-bold mb-4" style="color:#E87128">Gestion des utilisateurs</h1>
 
-    <?php if ($success): ?><div class="alert alert-success"><?= htmlspecialchars($success) ?></div><?php endif; ?>
-    <?php if ($error):   ?><div class="alert alert-danger"><?= htmlspecialchars($error) ?></div><?php endif; ?>
+$pageTitle = 'Utilisateurs — Admin Nord Backgammon';
+require_once 'includes/nav.php';
+?>
+
+<div class="container-fluid py-4 px-4">
+    <div class="nb-page-header"><h1><i class="bi bi-people-fill me-2"></i>Gestion des utilisateurs</h1></div>
+
+    <?php if ($success): ?>
+    <div class="alert alert-success mb-4"><i class="bi bi-check-circle-fill me-2"></i><?= htmlspecialchars($success) ?></div>
+    <?php endif; ?>
+    <?php if ($error): ?>
+    <div class="alert alert-danger mb-4"><?= htmlspecialchars($error) ?></div>
+    <?php endif; ?>
 
     <!-- Formulaire de création -->
     <div class="card mb-4">
-        <div class="card-header fw-bold">Nouvel utilisateur</div>
+        <div class="card-header"><i class="bi bi-person-plus me-2"></i>Nouvel utilisateur</div>
         <div class="card-body">
             <form method="post" class="row g-3">
                 <div class="col-md-3">
@@ -114,7 +117,9 @@ $users = $pdo->query("SELECT * FROM users ORDER BY created_at DESC")->fetchAll()
                     </select>
                 </div>
                 <div class="col-12">
-                    <button type="submit" name="add" class="btn btn-primary">Créer</button>
+                    <button type="submit" name="add" class="btn btn-primary">
+                        <i class="bi bi-person-plus me-1"></i>Créer
+                    </button>
                 </div>
             </form>
         </div>
@@ -122,9 +127,9 @@ $users = $pdo->query("SELECT * FROM users ORDER BY created_at DESC")->fetchAll()
 
     <!-- Liste -->
     <div class="card">
-        <div class="card-header fw-bold">Utilisateurs (<?= count($users) ?>)</div>
+        <div class="card-header"><i class="bi bi-list-ul me-2"></i>Utilisateurs (<?= count($users) ?>)</div>
         <div class="card-body p-0">
-            <table class="table table-striped mb-0">
+            <table class="table table-hover mb-0">
                 <thead>
                     <tr>
                         <th class="ps-3">Nom</th>
@@ -132,22 +137,22 @@ $users = $pdo->query("SELECT * FROM users ORDER BY created_at DESC")->fetchAll()
                         <th>Email</th>
                         <th>Rôle</th>
                         <th>Statut</th>
-                        <th class="pe-3">Actions</th>
+                        <th class="text-end pe-3">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php foreach ($users as $u): ?>
                     <tr <?= !$u['is_active'] ? 'style="opacity:.5"' : '' ?>>
                         <td class="ps-3"><?= htmlspecialchars($u['first_name'] . ' ' . $u['last_name']) ?></td>
-                        <td><?= htmlspecialchars($u['username']) ?></td>
-                        <td><?= htmlspecialchars($u['email']) ?></td>
+                        <td class="text-muted"><?= htmlspecialchars($u['username']) ?></td>
+                        <td class="text-muted small"><?= htmlspecialchars($u['email']) ?></td>
                         <td>
                             <?php if ($u['id'] != $currentUser['id']): ?>
                             <form method="post" class="d-inline">
                                 <input type="hidden" name="id" value="<?= $u['id'] ?>">
                                 <select name="role" class="form-select form-select-sm" style="width:auto;display:inline"
                                         onchange="this.form.submit()">
-                                    <option value="admin" <?= $u['role'] === 'admin' ? 'selected' : '' ?>>Admin</option>
+                                    <option value="admin"  <?= $u['role'] === 'admin'  ? 'selected' : '' ?>>Admin</option>
                                     <option value="member" <?= $u['role'] === 'member' ? 'selected' : '' ?>>Membre</option>
                                 </select>
                                 <input type="hidden" name="change_role" value="1">
@@ -164,18 +169,21 @@ $users = $pdo->query("SELECT * FROM users ORDER BY created_at DESC")->fetchAll()
                                 <span class="badge bg-secondary">Inactif</span>
                             <?php endif; ?>
                         </td>
-                        <td class="pe-3">
+                        <td class="text-end pe-3">
                             <?php if ($u['id'] != $currentUser['id']): ?>
                             <form method="post" class="d-inline">
                                 <input type="hidden" name="id" value="<?= $u['id'] ?>">
-                                <button type="submit" name="toggle_active" class="btn btn-sm btn-outline-secondary">
-                                    <?= $u['is_active'] ? 'Désactiver' : 'Activer' ?>
+                                <button type="submit" name="toggle_active"
+                                        class="btn btn-sm <?= $u['is_active'] ? 'btn-outline-warning' : 'btn-outline-success' ?> me-1"
+                                        title="<?= $u['is_active'] ? 'Désactiver' : 'Activer' ?>">
+                                    <i class="bi bi-<?= $u['is_active'] ? 'person-dash' : 'person-check' ?>"></i>
                                 </button>
                             </form>
                             <?php endif; ?>
-                            <button class="btn btn-sm btn-outline-warning"
-                                    onclick="resetPassword(<?= $u['id'] ?>, '<?= htmlspecialchars($u['username']) ?>')">
-                                Mot de passe
+                            <button class="btn btn-sm btn-outline-secondary"
+                                    onclick="resetPassword(<?= $u['id'] ?>, '<?= htmlspecialchars($u['username']) ?>')"
+                                    title="Réinitialiser le mot de passe">
+                                <i class="bi bi-key"></i>
                             </button>
                         </td>
                     </tr>
@@ -189,9 +197,9 @@ $users = $pdo->query("SELECT * FROM users ORDER BY created_at DESC")->fetchAll()
 <!-- Modal réinitialisation MDP -->
 <div class="modal fade" id="passwordModal" tabindex="-1">
     <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Réinitialiser le mot de passe</h5>
+        <div class="modal-content" style="background:#2a2a2a;border-color:#444">
+            <div class="modal-header" style="border-color:#444">
+                <h5 class="modal-title"><i class="bi bi-key me-2"></i>Réinitialiser le mot de passe</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
@@ -199,17 +207,20 @@ $users = $pdo->query("SELECT * FROM users ORDER BY created_at DESC")->fetchAll()
                     <input type="hidden" name="id" id="pwd_user_id">
                     <p class="text-muted small mb-3">Utilisateur : <strong id="pwd_username"></strong></p>
                     <div class="mb-3">
-                        <label class="form-label">Nouveau mot de passe (8 car. min)</label>
+                        <label class="form-label">Nouveau mot de passe <small class="text-muted">(8 car. min)</small></label>
                         <input type="password" name="new_password" class="form-control" required minlength="8">
                     </div>
-                    <button type="submit" name="reset_password" class="btn btn-primary">Enregistrer</button>
+                    <button type="submit" name="reset_password" class="btn btn-primary">
+                        <i class="bi bi-save me-1"></i>Enregistrer
+                    </button>
                 </form>
             </div>
         </div>
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<?php
+$extraScript = <<<'JS'
 <script>
 function resetPassword(id, username) {
     document.getElementById('pwd_user_id').value = id;
@@ -217,5 +228,6 @@ function resetPassword(id, username) {
     new bootstrap.Modal(document.getElementById('passwordModal')).show();
 }
 </script>
-</body>
-</html>
+JS;
+require_once 'includes/admin_footer.php';
+?>

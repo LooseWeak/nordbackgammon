@@ -289,354 +289,335 @@ $matches->bindValue(1, $offset, PDO::PARAM_INT);
 $matches->bindValue(2, $matches_per_page, PDO::PARAM_INT);
 $matches->execute();
 $matches = $matches->fetchAll();
+
+$pageTitle = 'Matchs — Admin Nord Backgammon';
+$extraHead = '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<style>
+.flatpickr-calendar { background:#2a2a2a; border-color:#444; }
+.flatpickr-day { color:#f0f0f0; }
+.flatpickr-day.selected, .flatpickr-day.selected:hover { background:#E87128; border-color:#E87128; }
+.flatpickr-day:hover { background:#3a3a3a; }
+.flatpickr-months .flatpickr-month, .flatpickr-weekdays, .flatpickr-time { background:#2a2a2a; color:#f0f0f0; }
+.flatpickr-current-month .flatpickr-monthDropdown-months { background:#2a2a2a; }
+.numInputWrapper span { border-color:#444; }
+.numInputWrapper span:hover { background:#3a3a3a; }
+.flatpickr-time input { background:#2a2a2a; color:#f0f0f0; }
+</style>';
+require_once 'includes/nav.php';
 ?>
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestion des matches - BackNord</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <style>
-        .pagination .page-link {
-            padding: 0.5rem 0.75rem;
-            margin: 0 2px;
-            border-radius: 4px;
-        }
-        .pagination .active .page-link {
-            background-color: #0d6efd;
-            border-color: #0d6efd;
-        }
-        .pagination .disabled .page-link {
-            color: #6c757d;
-            pointer-events: none;
-            background-color: #fff;
-            border-color: #dee2e6;
-        }
-    </style>
-</head>
-<body>
-    <div class="container mt-4">
-        <h1>Gestion des matchs</h1>
-        
-        <?php if (isset($error)): ?>
-            <div class="alert alert-danger">
-                <?= htmlspecialchars($error) ?>
-                <?php if (isset($proposeAsNormal) && $proposeAsNormal): ?>
-                    <form method="post" class="mt-2">
-                        <?php foreach ($formData as $key => $value): ?>
-                            <?php if ($key != 'is_championship'): ?>
-                                <input type="hidden" name="<?= htmlspecialchars($key) ?>" value="<?= htmlspecialchars($value) ?>">
-                            <?php endif; ?>
-                        <?php endforeach; ?>
-                        <button type="submit" name="<?= $formAction ?>" class="btn btn-primary">
-                            Enregistrer comme match hors championnat
-                        </button>
-                    </form>
+
+<div class="container-fluid py-4 px-4">
+    <div class="nb-page-header"><h1><i class="bi bi-controller me-2"></i>Gestion des matchs</h1></div>
+
+    <?php if (isset($error)): ?>
+    <div class="alert alert-danger mb-4">
+        <?= htmlspecialchars($error) ?>
+        <?php if (isset($proposeAsNormal) && $proposeAsNormal): ?>
+        <form method="post" class="mt-2">
+            <?php foreach ($formData as $key => $value): ?>
+                <?php if ($key != 'is_championship'): ?>
+                <input type="hidden" name="<?= htmlspecialchars($key) ?>" value="<?= htmlspecialchars($value) ?>">
                 <?php endif; ?>
-            </div>
+            <?php endforeach; ?>
+            <button type="submit" name="<?= $formAction ?>" class="btn btn-sm btn-primary mt-1">
+                <i class="bi bi-save me-1"></i>Enregistrer comme match hors championnat
+            </button>
+        </form>
         <?php endif; ?>
+    </div>
+    <?php endif; ?>
 
-        <?php if (isset($success)): ?>
-            <div class="alert alert-success"><?= htmlspecialchars($success) ?></div>
-        <?php endif; ?>
+    <?php if (isset($success)): ?>
+    <div class="alert alert-success mb-4"><i class="bi bi-check-circle-fill me-2"></i><?= htmlspecialchars($success) ?></div>
+    <?php endif; ?>
 
-        <!-- formulaire d'ajout -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h2 class="h5 mb-0">Ajouter un match</h2>
-            </div>
-            <div class="card-body">
-                <form method="post" class="row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Date et heure</label>
-                        <input type="text" name="match_date" class="form-control datetimePicker" required
-                            value="<?= isset($formData['match_date']) && isset($proposeAsNormal) && $formAction == 'add' ? htmlspecialchars($formData['match_date']) : '' ?>">
+    <!-- Formulaire d'ajout -->
+    <div class="card mb-4">
+        <div class="card-header"><i class="bi bi-plus-circle me-2"></i>Ajouter un match</div>
+        <div class="card-body">
+            <form method="post" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Date et heure</label>
+                    <input type="text" name="match_date" class="form-control datetimePicker" required
+                        value="<?= isset($formData['match_date']) && isset($proposeAsNormal) && $formAction == 'add' ? htmlspecialchars($formData['match_date']) : '' ?>">
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Points du match</label>
+                    <select name="points" class="form-select" required>
+                        <?php for($i=1; $i<=25; $i+=2): ?>
+                        <option value="<?= $i ?>" <?= isset($formData['points']) && isset($proposeAsNormal) && $formAction == 'add' && $formData['points'] == $i ? 'selected' : '' ?>>
+                            <?= $i ?> points
+                        </option>
+                        <?php endfor; ?>
+                    </select>
+                </div>
+
+                <div class="col-md-2 d-flex align-items-end">
+                    <div class="form-check mb-2">
+                        <input type="checkbox" name="is_championship" class="form-check-input" id="is_championship">
+                        <label class="form-check-label" for="is_championship">Championnat</label>
                     </div>
-                    
+                </div>
+
+                <div class="col-12"><hr class="border-secondary my-1"></div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Joueur 1</label>
+                    <select name="player1_id" class="form-select" required>
+                        <option value="">— Sélectionner —</option>
+                        <?php foreach($players as $player): ?>
+                        <option value="<?= $player['id'] ?>" <?= isset($formData['player1_id']) && isset($proposeAsNormal) && $formAction == 'add' && $formData['player1_id'] == $player['id'] ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($player['first_name'] . ' ' . $player['last_name']) ?>
+                        </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label">Score J1</label>
+                    <input type="number" name="score_player1" class="form-control" required min="0"
+                        value="<?= isset($formData['score_player1']) && isset($proposeAsNormal) && $formAction == 'add' ? htmlspecialchars($formData['score_player1']) : '' ?>">
+                </div>
+
+                <div class="col-md-1 d-flex align-items-end justify-content-center pb-2">
+                    <span class="text-muted fw-bold">VS</span>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Joueur 2</label>
+                    <select name="player2_id" class="form-select" required>
+                        <option value="">— Sélectionner —</option>
+                        <?php foreach($players as $player): ?>
+                        <option value="<?= $player['id'] ?>" <?= isset($formData['player2_id']) && isset($proposeAsNormal) && $formAction == 'add' && $formData['player2_id'] == $player['id'] ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($player['first_name'] . ' ' . $player['last_name']) ?>
+                        </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <div class="col-md-1">
+                    <label class="form-label">Score J2</label>
+                    <input type="number" name="score_player2" class="form-control" required min="0"
+                        value="<?= isset($formData['score_player2']) && isset($proposeAsNormal) && $formAction == 'add' ? htmlspecialchars($formData['score_player2']) : '' ?>">
+                </div>
+
+                <div class="col-12">
+                    <button type="submit" name="add" class="btn btn-primary">
+                        <i class="bi bi-save me-1"></i>Enregistrer le match
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Liste des matchs -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-list-ul me-2"></i>Liste des matchs</span>
+            <form method="get" class="d-inline-flex align-items-center gap-2">
+                <label class="text-muted small mb-0">Par page :</label>
+                <select name="per_page" class="form-select form-select-sm" style="width:auto" onchange="this.form.submit()">
+                    <?php foreach([5, 10, 20, 50] as $pp): ?>
+                    <option value="<?= $pp ?>" <?= $matches_per_page == $pp ? 'selected' : '' ?>><?= $pp ?></option>
+                    <?php endforeach; ?>
+                </select>
+                <input type="hidden" name="page" value="1">
+            </form>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th class="ps-3">Date</th>
+                            <th>Joueur 1</th>
+                            <th class="text-center">Score</th>
+                            <th>Joueur 2</th>
+                            <th class="text-center">Pts</th>
+                            <th class="text-end pe-3">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($matches as $match):
+                            $p1win = $match['score_player1'] > $match['score_player2'];
+                            $p2win = $match['score_player2'] > $match['score_player1'];
+                        ?>
+                        <tr>
+                            <td class="ps-3 text-nowrap">
+                                <span class="text-muted small"><?= date('d/m/Y H:i', strtotime($match['match_date'])) ?></span>
+                                <?php if ($match['is_championship']): ?>
+                                <br><span class="badge mt-1" style="background:#E87128;font-size:.7rem">
+                                    <i class="bi bi-award-fill me-1"></i>Champ. <?= date('Y', strtotime($match['match_date'])) ?>
+                                </span>
+                                <?php endif; ?>
+                            </td>
+                            <td class="<?= $p1win ? 'fw-bold' : 'text-muted' ?>">
+                                <?= htmlspecialchars($match['p1_first_name'] . ' ' . $match['p1_last_name']) ?>
+                            </td>
+                            <td class="text-center fw-bold" style="color:#E87128">
+                                <?= $match['score_player1'] ?> – <?= $match['score_player2'] ?>
+                            </td>
+                            <td class="<?= $p2win ? 'fw-bold' : 'text-muted' ?>">
+                                <?= htmlspecialchars($match['p2_first_name'] . ' ' . $match['p2_last_name']) ?>
+                            </td>
+                            <td class="text-center text-muted small"><?= $match['points'] ?></td>
+                            <td class="text-end pe-3">
+                                <button class="btn btn-sm btn-outline-secondary me-1"
+                                        onclick="editMatch(<?= htmlspecialchars(json_encode($match)) ?>)"
+                                        title="Modifier">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <form method="post" style="display:inline">
+                                    <input type="hidden" name="id" value="<?= $match['id'] ?>">
+                                    <button type="submit" name="delete" class="btn btn-sm btn-outline-danger"
+                                            onclick="return confirm('Supprimer ce match ?')" title="Supprimer">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <?php if ($total_pages > 1): ?>
+        <div class="card-header">
+            <ul class="pagination pagination-sm justify-content-center mb-0">
+                <li class="page-item <?= $current_page <= 1 ? 'disabled' : '' ?>">
+                    <a class="page-link" href="?page=<?= $current_page-1 ?>&per_page=<?= $matches_per_page ?>">&laquo;</a>
+                </li>
+                <?php foreach(generatePaginationLinks($current_page, $total_pages) as $page): ?>
+                    <?php if($page === '...'): ?>
+                    <li class="page-item disabled"><span class="page-link">…</span></li>
+                    <?php else: ?>
+                    <li class="page-item <?= $page == $current_page ? 'active' : '' ?>">
+                        <a class="page-link" href="?page=<?= $page ?>&per_page=<?= $matches_per_page ?>"><?= $page ?></a>
+                    </li>
+                    <?php endif; ?>
+                <?php endforeach; ?>
+                <li class="page-item <?= $current_page >= $total_pages ? 'disabled' : '' ?>">
+                    <a class="page-link" href="?page=<?= $current_page+1 ?>&per_page=<?= $matches_per_page ?>">&raquo;</a>
+                </li>
+            </ul>
+        </div>
+        <?php endif; ?>
+    </div>
+</div>
+
+<!-- Modal de modification -->
+<div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" style="background:#2a2a2a;border-color:#444">
+            <div class="modal-header" style="border-color:#444">
+                <h5 class="modal-title"><i class="bi bi-pencil-square me-2"></i>Modifier un match</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" id="editForm" class="row g-3">
+                    <input type="hidden" name="id" id="edit_id">
+
                     <div class="col-md-4">
+                        <label class="form-label">Date et heure</label>
+                        <input type="text" name="match_date" class="form-control datetimePicker" id="edit_match_date" required>
+                    </div>
+
+                    <div class="col-md-3">
                         <label class="form-label">Points du match</label>
-                        <select name="points" class="form-select" required>
+                        <select name="points" class="form-select" id="edit_points" required>
                             <?php for($i=1; $i<=25; $i+=2): ?>
-                                <option value="<?= $i ?>" <?= isset($formData['points']) && isset($proposeAsNormal) && $formAction == 'add' && $formData['points'] == $i ? 'selected' : '' ?>>
-                                    <?= $i ?> points
-                                </option>
+                            <option value="<?= $i ?>"><?= $i ?> points</option>
                             <?php endfor; ?>
                         </select>
                     </div>
 
-                    <div class="col-md-2">
-                        <label class="form-label">&nbsp;</label>
-                        <div class="form-check mt-2">
-                            <input type="checkbox" name="is_championship" class="form-check-input" id="is_championship">
-                            <label class="form-check-label" for="is_championship">Match de championnat</label>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <div class="form-check mb-2">
+                            <input type="checkbox" name="is_championship" class="form-check-input" id="edit_is_championship">
+                            <label class="form-check-label" for="edit_is_championship">Championnat</label>
                         </div>
                     </div>
 
-                    <div class="col-md-5">
+                    <div class="col-12"><hr class="border-secondary my-1"></div>
+
+                    <div class="col-md-4">
                         <label class="form-label">Joueur 1</label>
-                        <select name="player1_id" class="form-select" required>
-                            <option value="">Sélectionner un joueur</option>
+                        <select name="player1_id" class="form-select" id="edit_player1_id" required>
                             <?php foreach($players as $player): ?>
-                                <option value="<?= $player['id'] ?>" <?= isset($formData['player1_id']) && isset($proposeAsNormal) && $formAction == 'add' && $formData['player1_id'] == $player['id'] ? 'selected' : '' ?>>
-                                    <?= htmlspecialchars($player['first_name'] . ' ' . $player['last_name']) ?>
-                                </option>
+                            <option value="<?= $player['id'] ?>">
+                                <?= htmlspecialchars($player['first_name'] . ' ' . $player['last_name']) ?>
+                            </option>
                             <?php endforeach; ?>
                         </select>
                     </div>
 
                     <div class="col-md-2">
                         <label class="form-label">Score J1</label>
-                        <input type="number" name="score_player1" class="form-control" required min="0"
-                            value="<?= isset($formData['score_player1']) && isset($proposeAsNormal) && $formAction == 'add' ? htmlspecialchars($formData['score_player1']) : '' ?>">
+                        <input type="number" name="score_player1" class="form-control" id="edit_score_player1" required min="0">
                     </div>
 
-                    <div class="col-md-3">
-                        <label class="form-label">VS</label>
+                    <div class="col-md-1 d-flex align-items-end justify-content-center pb-2">
+                        <span class="text-muted fw-bold">VS</span>
                     </div>
 
-                    <div class="col-md-5">
+                    <div class="col-md-4">
                         <label class="form-label">Joueur 2</label>
-                        <select name="player2_id" class="form-select" required>
-                            <option value="">Sélectionner un joueur</option>
+                        <select name="player2_id" class="form-select" id="edit_player2_id" required>
                             <?php foreach($players as $player): ?>
-                                <option value="<?= $player['id'] ?>" <?= isset($formData['player2_id']) && isset($proposeAsNormal) && $formAction == 'add' && $formData['player2_id'] == $player['id'] ? 'selected' : '' ?>>
-                                    <?= htmlspecialchars($player['first_name'] . ' ' . $player['last_name']) ?>
-                                </option>
+                            <option value="<?= $player['id'] ?>">
+                                <?= htmlspecialchars($player['first_name'] . ' ' . $player['last_name']) ?>
+                            </option>
                             <?php endforeach; ?>
                         </select>
                     </div>
 
-                    <div class="col-md-2">
+                    <div class="col-md-1">
                         <label class="form-label">Score J2</label>
-                        <input type="number" name="score_player2" class="form-control" required min="0"
-                            value="<?= isset($formData['score_player2']) && isset($proposeAsNormal) && $formAction == 'add' ? htmlspecialchars($formData['score_player2']) : '' ?>">
+                        <input type="number" name="score_player2" class="form-control" id="edit_score_player2" required min="0">
                     </div>
 
                     <div class="col-12">
-                        <button type="submit" name="add" class="btn btn-primary">Enregistrer le match</button>
+                        <button type="submit" name="edit" class="btn btn-primary">
+                            <i class="bi bi-save me-1"></i>Enregistrer les modifications
+                        </button>
                     </div>
                 </form>
             </div>
         </div>
-
-        <!-- Liste des matches -->
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h2 class="h5 mb-0">Liste des matches</h2>
-                <div>
-                    <form method="get" class="d-inline-flex align-items-center">
-                        <label class="me-2">Matches par page:</label>
-                        <select name="per_page" class="form-select form-select-sm" style="width: auto;" onchange="this.form.submit()">
-                            <?php foreach([5, 10, 20, 50] as $per_page): ?>
-                                <option value="<?= $per_page ?>" <?= $matches_per_page == $per_page ? 'selected' : '' ?>>
-                                    <?= $per_page ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                        <input type="hidden" name="page" value="1">
-                    </form>
-                </div>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Joueur 1</th>
-                                <th>Score</th>
-                                <th>Joueur 2</th>
-                                <th>Points du match</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($matches as $match): 
-                                $player1IsWinner = $match['score_player1'] > $match['score_player2'];
-                                $player2IsWinner = $match['score_player2'] > $match['score_player1'];
-                            ?>
-                            <tr>
-                                <td>
-                                    <?= date('d/m/Y H:i', strtotime($match['match_date'])) ?>
-                                    <?php if ($match['is_championship']): ?>
-                                        <span class="badge bg-primary ms-1" title="Match de championnat">
-                                            Championnat <?= date('Y', strtotime($match['match_date'])) ?>
-                                        </span>
-                                    <?php endif; ?>
-                                </td>
-                                <td><?= $player1IsWinner ? '<strong>' : '' ?>
-                                    <?= htmlspecialchars($match['p1_first_name'] . ' ' . $match['p1_last_name']) ?>
-                                    <?= $player1IsWinner ? '</strong>' : '' ?>
-                                </td>
-                                <td><?= $match['score_player1'] ?> - <?= $match['score_player2'] ?></td>
-                                <td><?= $player2IsWinner ? '<strong>' : '' ?>
-                                    <?= htmlspecialchars($match['p2_first_name'] . ' ' . $match['p2_last_name']) ?>
-                                    <?= $player2IsWinner ? '</strong>' : '' ?>
-                                </td>
-                                <td><?= $match['points'] ?></td>
-                                <td>
-                                    <button class="btn btn-sm btn-primary" onclick="editMatch(<?= htmlspecialchars(json_encode($match)) ?>)">
-                                        Modifier
-                                    </button>
-                                    <form method="post" style="display: inline;">
-                                        <input type="hidden" name="id" value="<?= $match['id'] ?>">
-                                        <button type="submit" name="delete" class="btn btn-sm btn-danger" 
-                                                onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce match ?')">
-                                            Supprimer
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Pagination -->
-                <?php if ($total_pages > 1): ?>
-                <nav aria-label="Navigation des pages" class="mt-4">
-                    <ul class="pagination justify-content-center">
-                        <li class="page-item <?= ($current_page <= 1) ? 'disabled' : '' ?>">
-                            <a class="page-link" href="?page=<?= $current_page - 1 ?>&per_page=<?= $matches_per_page ?>" aria-label="Précédent">
-                                <span aria-hidden="true">&laquo;</span>
-                            </a>
-                        </li>
-                        
-                        <?php foreach(generatePaginationLinks($current_page, $total_pages) as $page): ?>
-                            <?php if($page === '...'): ?>
-                                <li class="page-item disabled"><span class="page-link">...</span></li>
-                            <?php else: ?>
-                                <li class="page-item <?= ($page == $current_page) ? 'active' : '' ?>">
-                                    <a class="page-link" href="?page=<?= $page ?>&per_page=<?= $matches_per_page ?>">
-                                        <?= $page ?>
-                                    </a>
-                                </li>
-                            <?php endif; ?>
-                        <?php endforeach; ?>
-                        
-                        <li class="page-item <?= ($current_page >= $total_pages) ? 'disabled' : '' ?>">
-                            <a class="page-link" href="?page=<?= $current_page + 1 ?>&per_page=<?= $matches_per_page ?>" aria-label="Suivant">
-                                <span aria-hidden="true">&raquo;</span>
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
-                <?php endif; ?>
-            </div>
-        </div>
-
-        <!-- Modal de modification -->
-        <div class="modal fade" id="editModal" tabindex="-1">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Modifier un match</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form method="post" id="editForm" class="row g-3">
-                            <input type="hidden" name="id" id="edit_id">
-                            
-                            <div class="col-md-6">
-                                <label class="form-label">Date et heure</label>
-                                <input type="text" name="match_date" class="form-control datetimePicker" id="edit_match_date" required>
-                            </div>
-                            
-                            <div class="col-md-4">
-                                <label class="form-label">Points du match</label>
-                                <select name="points" class="form-select" id="edit_points" required>
-                                    <?php for($i=1; $i<=25; $i+=2): ?>
-                                        <option value="<?= $i ?>"><?= $i ?> points</option>
-                                    <?php endfor; ?>
-                                </select>
-                            </div>
-
-                            <div class="col-md-2">
-                                <label class="form-label">&nbsp;</label>
-                                <div class="form-check mt-2">
-                                    <input type="checkbox" name="is_championship" class="form-check-input" id="edit_is_championship">
-                                    <label class="form-check-label" for="edit_is_championship">Match de championnat</label>
-                                </div>
-                            </div>
-
-                            <div class="col-md-5">
-                                <label class="form-label">Joueur 1</label>
-                                <select name="player1_id" class="form-select" id="edit_player1_id" required>
-                                    <?php foreach($players as $player): ?>
-                                        <option value="<?= $player['id'] ?>">
-                                            <?= htmlspecialchars($player['first_name'] . ' ' . $player['last_name']) ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-
-                            <div class="col-md-2">
-                                <label class="form-label">Score J1</label>
-                                <input type="number" name="score_player1" class="form-control" id="edit_score_player1" required min="0">
-                            </div>
-
-                            <div class="col-md-5">
-                                <label class="form-label">Joueur 2</label>
-                                <select name="player2_id" class="form-select" id="edit_player2_id" required>
-                                    <?php foreach($players as $player): ?>
-                                        <option value="<?= $player['id'] ?>">
-                                            <?= htmlspecialchars($player['first_name'] . ' ' . $player['last_name']) ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-
-                            <div class="col-md-2">
-                                <label class="form-label">Score J2</label>
-                                <input type="number" name="score_player2" class="form-control" id="edit_score_player2" required min="0">
-                            </div>
-
-                            <div class="col-12">
-                                <button type="submit" name="edit" class="btn btn-primary">Enregistrer les modifications</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
-    <script>
-        // Initialisation de tous les sélecteurs de date
-        flatpickr(".datetimePicker", {
-            enableTime: true,
-            dateFormat: "Y-m-d H:i",
-            time_24hr: true,
-            locale: "fr",
-            defaultDate: new Date()
-        });
+<?php
+$extraScript = <<<'JS'
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
+<script>
+flatpickr(".datetimePicker", {
+    enableTime: true,
+    dateFormat: "Y-m-d H:i",
+    time_24hr: true,
+    locale: "fr",
+    defaultDate: new Date()
+});
 
-        function editMatch(match) {
-            document.getElementById('edit_id').value = match.id;
-            document.getElementById('edit_match_date').value = match.match_date;
-            document.getElementById('edit_points').value = match.points;
-            document.getElementById('edit_player1_id').value = match.player1_id;
-            document.getElementById('edit_player2_id').value = match.player2_id;
-            document.getElementById('edit_score_player1').value = match.score_player1;
-            document.getElementById('edit_score_player2').value = match.score_player2;
-            document.getElementById('edit_is_championship').checked = match.is_championship == 1;
-            
-            // Réinitialiser Flatpickr pour le champ de date dans le modal
-            flatpickr("#edit_match_date", {
-                enableTime: true,
-                dateFormat: "Y-m-d H:i",
-                time_24hr: true,
-                locale: "fr",
-                defaultDate: match.match_date
-            });
-
-            new bootstrap.Modal(document.getElementById('editModal')).show();
-        }
-    </script>
-</body>
-</html>
+function editMatch(match) {
+    document.getElementById('edit_id').value = match.id;
+    document.getElementById('edit_points').value = match.points;
+    document.getElementById('edit_player1_id').value = match.player1_id;
+    document.getElementById('edit_player2_id').value = match.player2_id;
+    document.getElementById('edit_score_player1').value = match.score_player1;
+    document.getElementById('edit_score_player2').value = match.score_player2;
+    document.getElementById('edit_is_championship').checked = match.is_championship == 1;
+    flatpickr("#edit_match_date", {
+        enableTime: true,
+        dateFormat: "Y-m-d H:i",
+        time_24hr: true,
+        locale: "fr",
+        defaultDate: match.match_date
+    });
+    new bootstrap.Modal(document.getElementById('editModal')).show();
+}
+</script>
+JS;
+require_once 'includes/admin_footer.php';
