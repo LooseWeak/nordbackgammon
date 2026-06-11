@@ -1,0 +1,192 @@
+/* ============================================================
+   Nord Backgammon — Dark Theme
+   Palette : #1a1a1a (fond) | #E87128 (orange) | #4a4a4a (gris) | #6B2040 (bordeaux)
+   ============================================================ */
+
+:root {
+    --nb-bg:        #1a1a1a;
+    --nb-surface:   #2a2a2a;
+    --nb-border:    #3a3a3a;
+    --nb-orange:    #E87128;
+    --nb-orange-dk: #cf6122;
+    --nb-grey:      #4a4a4a;
+    --nb-bordeaux:  #6B2040;
+    --nb-text:      #f0f0f0;
+    --nb-muted:     #888;
+}
+
+/* ── Base ── */
+body {
+    background-color: var(--nb-bg);
+    color: var(--nb-text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    padding-top: 70px; /* compense la navbar fixed */
+}
+
+a { color: var(--nb-orange); text-decoration: none; }
+a:hover { color: var(--nb-orange-dk); }
+
+/* ── Navbar ── */
+.nb-navbar {
+    background-color: rgba(26, 26, 26, .95);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--nb-border);
+}
+.nb-navbar .nav-link { color: #ccc; transition: color .2s; }
+.nb-navbar .nav-link:hover,
+.nb-navbar .nav-link.active { color: var(--nb-orange); }
+
+.btn-outline-nb {
+    color: var(--nb-orange);
+    border-color: var(--nb-orange);
+}
+.btn-outline-nb:hover {
+    background-color: var(--nb-orange);
+    color: #fff;
+}
+
+/* ── Hero ── */
+.nb-hero {
+    min-height: 92vh;
+    background: url('/assets/img/background.jpg') center center / cover no-repeat;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    position: relative;
+}
+.nb-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,.60);
+}
+.nb-hero .hero-content {
+    position: relative;
+    z-index: 1;
+}
+.nb-hero h1 {
+    font-size: clamp(2.5rem, 6vw, 5rem);
+    font-weight: 900;
+    letter-spacing: -.02em;
+}
+.nb-hero .tagline {
+    font-size: clamp(1rem, 2.5vw, 1.5rem);
+    color: var(--nb-orange);
+    font-style: italic;
+}
+
+/* ── Sections ── */
+.nb-section { padding: 5rem 0; }
+.nb-section-dark { background-color: var(--nb-surface); }
+
+.section-title {
+    font-weight: 800;
+    font-size: 2rem;
+    margin-bottom: .5rem;
+}
+.section-title span { color: var(--nb-orange); }
+.section-divider {
+    width: 60px;
+    height: 3px;
+    background: var(--nb-orange);
+    margin: 0 auto 2.5rem;
+}
+
+/* ── Cards ── */
+.nb-card {
+    background-color: var(--nb-surface);
+    border: 1px solid var(--nb-border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform .2s, box-shadow .2s;
+    height: 100%;
+}
+.nb-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,.4);
+}
+.nb-card .card-body { padding: 1.5rem; }
+.nb-card .card-title { color: #fff; font-weight: 700; }
+.nb-card .card-text { color: var(--nb-muted); font-size: .9rem; }
+
+/* ── Piliers ── */
+.pilier-icon {
+    font-size: 2.5rem;
+    color: var(--nb-orange);
+    margin-bottom: 1rem;
+}
+
+/* ── Galerie ── */
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: .75rem;
+}
+.gallery-grid img {
+    width: 100%;
+    aspect-ratio: 4/3;
+    object-fit: cover;
+    border-radius: 8px;
+    transition: opacity .2s;
+}
+.gallery-grid img:hover { opacity: .85; }
+
+/* ── Actualités ── */
+.news-date {
+    font-size: .8rem;
+    color: var(--nb-orange);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+}
+
+/* ── Classement ── */
+.ranking-table th { color: var(--nb-orange); border-color: var(--nb-border); }
+.ranking-table td { border-color: var(--nb-border); color: var(--nb-text); }
+.ranking-table tbody tr:hover { background-color: var(--nb-surface); }
+.trend-up   { color: #198754; }
+.trend-down { color: #dc3545; }
+
+/* ── Formulaire de contact ── */
+.nb-form .form-control,
+.nb-form .form-select {
+    background-color: var(--nb-surface);
+    border-color: var(--nb-border);
+    color: var(--nb-text);
+}
+.nb-form .form-control:focus,
+.nb-form .form-select:focus {
+    background-color: var(--nb-surface);
+    border-color: var(--nb-orange);
+    color: var(--nb-text);
+    box-shadow: 0 0 0 .25rem rgba(232,113,40,.2);
+}
+.nb-form label { color: #ccc; }
+
+/* ── Boutons principaux ── */
+.btn-nb {
+    background-color: var(--nb-orange);
+    color: #fff;
+    border: none;
+    padding: .6rem 1.5rem;
+    border-radius: 6px;
+    font-weight: 600;
+    transition: background-color .2s;
+}
+.btn-nb:hover { background-color: var(--nb-orange-dk); color: #fff; }
+
+/* ── Footer ── */
+.nb-footer {
+    background-color: #111;
+    border-top: 1px solid var(--nb-border);
+}
+.footer-link { color: var(--nb-muted); font-size: .9rem; display: block; margin-bottom: .3rem; }
+.footer-link:hover { color: var(--nb-orange); }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+    .gallery-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 480px) {
+    .gallery-grid { grid-template-columns: 1fr 1fr; }
+}
